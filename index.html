@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TabiCat</title>
+<script>window.$ = window.jQuery = require('jquery');</script>
+<link rel="stylesheet" href="style.css">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src https://* 'self';">
+</head>
+<body>
+<div id="template-holder">
+<div class="window">
+  <div class="window-real">
+    <div class="window-top">
+      <span class="window-title">A window my fam</span>
+      <span class="window-buttons">
+        <span class="window-close"></span>
+      </span>
+    </div>
+  </div>
+</div>
+<div class="blue_control">
+  <p>Sends BlueControl data to robot.
+    Receive data from this by using <code>bros::Controller(prefix)</code> instead of <code>pros::Controller</code>.
+    Header file for <code>bros::Controller</code> is <code>#include "blue_controller.hpp"</code>.</p>
+  <input type="text" name="gamepad_id">
+  <input type="text" name="tx_prefix">
+  <p class="blue_control-status">(Status not loaded.)</p>
+</div>
+<div class="text_test">
+  Hi from the text_test template
+  <img src="https://cataas.com/cat?rand=1">
+</div>
+<div class="chart">
+  <canvas class="chart-canvas"></canvas>
+  <p class="chart-caption"></p>
+</div>
+<!--
+  <div class="profile_tester">
+    <button class="profile_tester-max-test">Start Max Test</button><br>
+    <hr>
+  Limits:
+  <input type="text" name="pos" data-type="number">
+  <input type="text" name="vel" data-type="number">
+  <input type="text" name="acc" data-type="number">
+  <input type="text" name="jrk" data-type="number">
+  Gains:
+  <input type="text" name="kV" data-type="number">
+  <input type="text" name="kA" data-type="number">
+  Options:
+  <input type="checkbox" name="stopOnFinish"  data-type="boolean">
+  <input type="text"     name="stopBrakeMode" data-type="number">
+  <input type="checkbox" name="feedbackOn"    data-type="boolean">
+  <hr>
+  <button class="profile_tester-test">Start Test</button>
+</div>
+<div class="pid_tester">
+  Gains:
+  <input type="text" name="kP" data-type="number">
+  <input type="text" name="kI" data-type="number">
+  <input type="text" name="kD" data-type="number">
+  <input type="text" name="kBias" data-type="number">
+  Options:
+  <input type="checkbox" name="useVoltage"   data-type="boolean">
+  <hr>
+  <button class="pid_tester-test">Start Test</button>
+</div>
+-->
+<div class="screenshotter">
+  <button class="screenshotter-go">Take a screenshot</button>
+  <img class="screenshotter-img">
+</div>
+<div class="executor">
+  <p>JS Code to execute:</p>
+  <textarea class="executor-code" cols="30" rows="10">
+(async () => {
+  
+})
+  </textarea>
+  <button class="executor-go">Go!</button>
+  <pre class="executor-result"></pre>
+</div>
+<div class="cards">
+  <div class="cards-displayed"></div>
+  <input type="range" name="selected" value="0" min="0">
+  <p class="cards-label"></p>
+</div>
+<div class="connector">
+  Robot connection status: <span class="connection-status">CONNECTING</span>.<br>
+  Global System Device: <input type="text" class="connector-sys-dev auto-setter-exemption"><br>
+  Global User Device: <input type="text" class="connector-usr-dev auto-setter-exemption"><br>
+  <button class="connector-dev-change">Set Device</button><br>
+  <button class="reconnect">Reconnect</button>
+</div>
+<div class="animator">
+  Animator for <span class="animator-what"></span> on <span class="animator-window-name"></span>.
+  <input name="Initial" type="text" data-type="number">
+  <input name="Final"   type="text" data-type="number">
+  <input name="Steps"   type="text" data-type="number">
+  <button class="animator-go">Go!!!</button>
+</div>
+<div class="output">
+  
+</div>
+</div>
+<div id="sidepanel">
+<ul id="sidepanel-builtins">
+
+</ul>
+<span class="robot_registry-status">Reg Not Loaded</span>
+<ul class="robot_registry-list">
+
+</ul>
+<a href="#" id="registry-refresh">Refresh</a>
+</div>
+<div id="window-container">
+</div>
+<script src="jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<script src="page.js"></script>
+</body>
+</html>
