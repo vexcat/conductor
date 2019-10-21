@@ -184,7 +184,7 @@ function buildUI(named, content) {
             acc[val.key] = this[val.key];
           }
           return acc;
-        });
+        }, {});
         bot.sendRequest(named, reqData, {}).then(response => {
           this.emit('data', response.content);
           let js = content.find(a => a.kind === 'reply_action').do;
