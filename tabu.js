@@ -5,7 +5,8 @@ const fs = require('fs');
 
 function makeid(length) {
   var result           = '';
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  //Lowercase p intentionally omitted
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnoqrstuvwxyz0123456789';
   var charactersLength = characters.length;
   for ( var i = 0; i < length; i++ ) {
      result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -13,61 +14,10 @@ function makeid(length) {
   return result;
 }
 
-function encode(str) {
-  //lowercase p is not allowed, is the command character in PROS
-  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno@qrstuvwxyz0123456789-_='
-  var encoded = [];
-  var c = 0;
-  while (c < str.length) {
-    var b0 = str.charCodeAt(c++);
-    var b1 = str.charCodeAt(c++);
-    var b2 = str.charCodeAt(c++);
-    var buf = (b0 << 16) + ((b1 || 0) << 8) + (b2 || 0);
-    var i0 = (buf & (63 << 18)) >> 18;
-    var i1 = (buf & (63 << 12)) >> 12;
-    var i2 = isNaN(b1) ? 64 : (buf & (63 << 6)) >> 6;
-    var i3 = isNaN(b2) ? 64 : (buf & 63);
-    encoded[encoded.length] = chars.charAt(i0);
-    encoded[encoded.length] = chars.charAt(i1);
-    encoded[encoded.length] = chars.charAt(i2);
-    encoded[encoded.length] = chars.charAt(i3);
-  }
-  return encoded.join('');
-}
-
-function decode(str) {
-  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno@qrstuvwxyz0123456789-_=',
-      invalid_char = /[^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmno@qrstuvwxyz0123456789-_=]/;
-
-  var invalid = {
-    strlen: (str.length % 4 != 0),
-    chars:  invalid_char.test(str),
-    equals: (/=/.test(str) && (/=[^=]/.test(str) || /={3}/.test(str)))
-  };
-  if (invalid.strlen || invalid.chars || invalid.equals)
-    throw new Error('Invalid base64 data');
-  var decoded = [];
-  var c = 0;
-  while (c < str.length) {
-    var i0 = chars.indexOf(str.charAt(c++));
-    var i1 = chars.indexOf(str.charAt(c++));
-    var i2 = chars.indexOf(str.charAt(c++));
-    var i3 = chars.indexOf(str.charAt(c++));
-    var buf = (i0 << 18) + (i1 << 12) + ((i2 & 63) << 6) + (i3 & 63);
-    var b0 = (buf & (255 << 16)) >> 16;
-    var b1 = (i2 == 64) ? -1 : (buf & (255 << 8)) >> 8;
-    var b2 = (i3 == 64) ? -1 : (buf & 255);
-    decoded[decoded.length] = String.fromCharCode(b0);
-    if (b1 >= 0) decoded[decoded.length] = String.fromCharCode(b1);
-    if (b2 >= 0) decoded[decoded.length] = String.fromCharCode(b2);
-  }
-  return decoded.join('');
-}
-
 class Message extends EventEmitter {
   constructor(robot, address, content, id) {
     super();
-    this.contentStr = JSON.stringify(content);
+    this.contentStr = JSON.stringify(content).replace(/p/g, '\\u0070');
     this.content = content;
     Object.assign(this, {robot, address, id: id || makeid(8), pos: null});
     this.on('newListener', (evt, listen) => {
@@ -87,10 +37,10 @@ class Message extends EventEmitter {
     });
   }
 
-  set content(to) { this._content = to; this.contentStr = JSON.stringify(to); }
+  set content(to) { this._content = to; this.contentStr = JSON.stringify(to).replace(/p/g, '\\u0070'); }
   get content() { return this._content; }
-  get text() { return `${this.address}/${this.id}/${this.contentStr}`; }
-  get encoded() { return encode(this.text) + '\n'; }
+  get text() { return `${this.address}/${this.id}/${this.contentStr}`.replace(/p/g, '\\u0070'); }
+  get encoded() { return this.text + '\n'; }
 
   reply(content) {
     return new Message(this.robot, `@${this.id}`, content).resend();
@@ -125,19 +75,25 @@ class Message extends EventEmitter {
     //Send 1024 characters of content.
     let nextData = this.contentStr.substr(this.pos, 1024);
     this.pos += nextData.length;
-    (await new Message(this.robot, `=file-transfer`, {
+    let pieceOut = (await new Message(this.robot, `=file-transfer`, {
       origID: this.id,
       origAddr: this.address,
       nextData,
       done: this.pos === this.contentStr.length
-    }).resend()).once('reply', () => {
-      if(this.pos === this.contentStr.length) {
-        //When transfer is done, send back this message.
-        this.emit('big-transfer-done', this);
-      } else {
-        this.continueBig();
-      }
-    }).on('error', e => this.emit('big-transfer-fail', e));
+    }).resend());
+    if(this.robot.replyInBigTransfers) {
+      pieceOut.once('reply', () => {
+        if(this.pos === this.contentStr.length) {
+          //When transfer is done, send back this message.
+          this.emit('big-transfer-done', this);
+        } else {
+          this.continueBig();
+        }
+      }).on('error', e => this.emit('big-transfer-fail', e));
+    } else {
+      //Purely to avoid a stack overflow
+      setTimeout(() => this.continueBig(), 0);
+    }
   }
 }
 
@@ -147,6 +103,7 @@ class Robot extends EventEmitter {
     this.waitingReplies = [];
     this.orphanReplies = [];
     this.ongoingTransfers = {};
+    this.replyInBigTransfers = true;
     this.port = new SerialPort(path, {
       baudRate: 115200,
       lock: false
@@ -183,12 +140,12 @@ class Robot extends EventEmitter {
       this.emit('open');
     });
     let onLine = line => {
-      console.log('in onLine')
       line = line.toString('UTF-8');
+      console.log(line);
       try {
-        let match = /^([=@][^/]+)\/([^/]{8})\/(.*)$/.exec(decode(line.replace('\n', '')));
+        let match = /^([=@][^/]+)\/([^/]{8})\/(.*)$/.exec(line.replace('\n', ''));
         if(!match) throw 'Not valid message';
-        let msg = new Message(this, match[1], JSON.parse(match[3]), match[2]);
+        let msg = new Message(this, JSON.parse(`"${match[1]}"`), JSON.parse(match[3]), match[2]);
         //console.log("FROM ROBOT", msg.text);
         let title = msg.address.slice(1);
         if(msg.address.startsWith('@')) {
