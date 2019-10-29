@@ -391,6 +391,8 @@ class TabiWindow extends EventEmitter {
     .draggable({
       handle: '.window-top'//,
       //containment: $('body')
+    }).resizable({
+      handles: 'e, w'
     });
     let pos = this.windowDOM.position();
     real.css({left: lastPos - pos.left + 120, top: lastPos - pos.top});

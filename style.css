@@ -36,8 +36,8 @@ body, html {
   background-color: #ffffff;
   width: 400px;
   border: solid 1px black;
-  border-radius: 12px;
-  overflow: hidden;
+  /*border-radius: 12px;*/
+  overflow: visible;
   box-shadow: 10px 10px 10px 0px rgba(184,184,184,0.48);
 }
 .window-content p {
@@ -45,6 +45,7 @@ body, html {
 }
 input {
   width: 100%;
+  box-sizing: border-box;
 }
 .input-pair span {
   display: inline-block;
