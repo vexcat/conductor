@@ -103,7 +103,7 @@ function makeGraphElement(graphable, axis, title) {
       }
     }
   });
-  return $('<div>').append(ctx).append($('<a href="#">').text('as .csv').click(() => {
+  return $('<div>').append($('<div>').addClass('chart-box').append(ctx)).append($('<a href="#">').text('as .csv').click(() => {
     let columns = [];
     for(let dataset of formatted.datasets) {
       columns.push(dataset.label);
@@ -195,7 +195,7 @@ function buildUI(named, content) {
   }
 }
 function processOutput(it, action, builtUI, shouldOpenWindow) {
-  let output = $('<div>');
+  let output = $('<div>').addClass('robot-output');
   function graph(graphable, axis) {
     if(axis === undefined) axis = 'time';
     output.append(makeGraphElement(graphable, axis));
@@ -205,7 +205,8 @@ function processOutput(it, action, builtUI, shouldOpenWindow) {
   }
   eval(action);
   if(shouldOpenWindow) {
-    new TabiWindow('output').contentDOM.append(output)
+    let win = new TabiWindow('output', builtUI.windowTitle);
+    win.contentDOM.append(output)
     .append($('<button>Retry</button>').addClass('again').click(async () => {
       let newOutput = await builtUI.doTest(false);
       output.empty().append(newOutput.children());
@@ -291,6 +292,7 @@ let windows = {
   },
   cards: class {
     constructor(w, panels, title) {
+      this.panels = panels;
       this.windowTitle = title;
       this.selected = 0;
       w.contentDOM.find('input[name=selected]').attr('max', panels.length - 1);
@@ -315,10 +317,14 @@ let windows = {
       let label = w.contentDOM.find('.cards-label');
       display.append(panels[0].win);
       label.text(panels[0].name);
+      let pixar = 0;
       w.on('prop-change', key => {
-        display.children().detach();
-        display.append(panels[this.selected].win);
-        label.text(panels[this.selected].name);
+        if(!pixar) pixar = requestAnimationFrame(() => {
+          display.children().detach();
+          display.append(panels[this.selected].win);
+          label.text(panels[this.selected].name);
+          pixar = 0;
+        });
       });
     }
   },
@@ -336,6 +342,9 @@ let windows = {
       });
       new TabiWindow('cards', ret, `${targetProp} ${this.Initial} to ${this.Final} on ${title}`);
     });
+  },
+  output: function(w, testName) {
+    this.windowTitle = 'Output - ' + testName;
   }
 };
 

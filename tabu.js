@@ -111,7 +111,6 @@ class Robot extends EventEmitter {
     this.port.on('error', err => this.emit('error', err));
     this.receivedText = [];
     let onData = buf => {
-      console.log('in onData');
       this.receivedText.push(buf);
       if(buf.includes('\n'.charCodeAt(0))) {
         let allReceived = Buffer.concat(this.receivedText);
@@ -123,7 +122,6 @@ class Robot extends EventEmitter {
     };
     this.received = [];
     let onCOBSData = buf => {
-      console.log('in onCOBSData');
       this.received.push(buf);
       if(buf.includes(0)) {
         let allReceived = Buffer.concat(this.received);
@@ -171,6 +169,7 @@ class Robot extends EventEmitter {
             }
             xfer.text += msg.content.nextData;
             //Always send a reply.
+            console.log('checkpoint 1');
             msg.reply({});
             if(msg.content.done) {
               //Delete ongoingTransfer.

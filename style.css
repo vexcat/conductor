@@ -12,14 +12,18 @@ body, html {
 }
 .window-top {
   background-color: gray;
-  height: 20px;
   line-height: 20px;
+  padding-right: 20px;
+  position: relative;
 }
 .window-title {
   margin-left: 8px;
 }
 .window-buttons {
   float: right;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 .window-close {
   background-color: #ea5959;
@@ -58,7 +62,7 @@ input {
   margin: 8px;
 }
 code {
-  font-family: monospace;
+  font-family: 'Source Code Pro for Powerline', 'monospace';
   background-color: #efefef;
 }
 .text_test img {
@@ -73,7 +77,7 @@ textarea {
   box-sizing: border-box;
 }
 pre {
-  font-family: monospace;
+  font-family: 'Source Code Pro for Powerline', 'monospace';
   overflow: auto;
 }
 #sidepanel {
@@ -103,5 +107,20 @@ button {
   width: 100%;
 }
 textarea {
-  font-family: monospace;
+  font-family: 'Source Code Pro for Powerline', 'monospace';
+}
+.chart-box {
+  width: 100%;
+  padding-top: 50%;
+  position: relative;
+}
+.chart-box canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.robot-output p {
+  font-family: 'Source Code Pro for Powerline', 'monospace';
+  background-color: #DDDDDD;
 }
