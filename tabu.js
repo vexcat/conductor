@@ -215,7 +215,7 @@ class Robot extends EventEmitter {
   sendRequest(topic, content) {
     if(content === undefined) content = null;
     return new Promise((res, rej) => {
-      new Message(this, `=${topic}`, content).resend().then(msg => {
+      new Message(this, `=${topic}`, content).resendBig().then(msg => {
         msg.on('reply', reply => {
           res(reply);
         });
