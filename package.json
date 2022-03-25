@@ -15,7 +15,7 @@
     "@serialport/bindings": "^2.0.8",
     "chart.js": "^2.8.0",
     "cobs": "^0.2.1",
-    "electron": "^5.0.6",
+    "electron": "^13.6.6",
     "electron-context-menu": "^0.13.0",
     "electron-debug": "^3.0.1",
     "electron-rebuild": "^1.8.5",
